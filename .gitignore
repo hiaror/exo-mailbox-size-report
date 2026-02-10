@@ -1,0 +1,15 @@
+# Ignore generated reports
+*.csv
+
+# Ignore logs
+*.log
+
+# Ignore PowerShell temp files
+*.tmp
+
+# Ignore local VS Code settings
+.vscode/
+
+# Ignore OS files
+.DS_Store
+Thumbs.db
