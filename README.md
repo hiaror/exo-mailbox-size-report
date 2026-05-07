@@ -1,76 +1,78 @@
-## Exchange Online Mailbox Size Report
+# Exchange Online Mailbox Size Report
 
-This repository contains a PowerShell script that generates mailbox size reports for Exchange Online using a CSV driven input.
+## Overview
+This repository contains a PowerShell script that generates mailbox size reports for **Exchange Online** using a **CSV-driven UPN list as input**.
 
-The script was created during a tenant to tenant migration project where early visibility into mailbox sizes was required for planning and decision making.
+The script normalises Exchange Online's `TotalItemSize` byte-quantified strings into numeric GB values during execution, so the exported report is sortable and analysis-ready without any post-processing in Excel.
 
----
+## Why This Exists
 
-## What the script does
+In tenant-to-tenant migration projects, early visibility into mailbox sizes is required for batch planning, licensing decisions, and storage analysis.
 
-- Reads a list of mailboxes from a CSV file
-- Retrieves primary and archive mailbox statistics from Exchange Online
-- Converts mailbox size values into numeric GB values within PowerShell
-- Exports a clean CSV report ready for sorting and analysis
+Exchange Online mailbox statistics are returned as formatted strings that are not immediately usable for calculations or sorting. This script normalises those values during execution so the exported report can be used directly without additional Excel formulas or manual cleanup.
 
-No post processing in Excel is required.
+## Key Capabilities
+- CSV-driven input using a single UPN column
+- Primary and archive mailbox statistics in a single report
+- Numeric GB column for sorting and aggregation
+- Per-mailbox try/catch so individual failures do not stop the run
+- Friendly text size column retained for readability
+- Sanitized sample data for reference
 
----
+## Repository Structure
+```
+.
+├── scripts/
+│   └── Invoke-EXOMailboxSizeReport.ps1
+├── sample-data/
+│   └── Mailboxes.sample.csv
+└── README.md
+```
 
-## Why this approach
+## Prerequisites
+- PowerShell 5.1 or PowerShell 7.x
+- ExchangeOnlineManagement v3 module installed
+- An account with the View-Only Recipients role (or higher) in Exchange Online
 
-Exchange Online mailbox statistics are returned as formatted strings that are not immediately usable for calculations or sorting.
+## CSV Input Format
 
-This script normalizes size values during execution so the exported report can be used directly without additional Excel formulas or manual cleanup.
-
-This makes it easier to:
-- Sort mailboxes by size
-- Identify large mailboxes early
-- Use the output for migration planning
-
----
-
-## Folder structure
-
-scripts/
-  Invoke-EXOMailboxSizeReport.ps1
-
-sample-data/
-  Mailboxes.sample.csv
-
----
-
-## Input CSV format
-
-The input CSV must contain a column named UPN.
-
-Example:
-
+### Mailboxes CSV
+```csv
 UPN
-user1@domain.com
-sharedmailbox@domain.com
+alex.lee@northshore.example
+nina.kapoor@northshore.example
+shared.finance@northshore.example
+```
 
----
+## Usage Examples
 
-## Example execution
+### Standard Run
+```powershell
+./Invoke-EXOMailboxSizeReport.ps1 `
+  -InputCsv "./sample-data/Mailboxes.sample.csv" `
+  -CSVPath  "./MailboxSizeReport_YYYYMMDD_HHMMSS.csv"
+```
 
-.\Invoke-EXOMailboxSizeReport.ps1 `
-  -InputCsv ".\migrationmailboxes.csv" `
-  -CSVPath ".\MailboxSizeReport_YYYYMMDD_HHMMSS.csv"
+### Quiet Run (No Progress Bar)
+```powershell
+./Invoke-EXOMailboxSizeReport.ps1 `
+  -InputCsv "./sample-data/Mailboxes.sample.csv" `
+  -CSVPath  "./MailboxSizeReport_YYYYMMDD_HHMMSS.csv" `
+  -NoProgress
+```
 
----
+## Reporting
+Each run produces a timestamped CSV report capturing:
+- UserPrincipalName
+- PrimaryTotalItemSize (friendly text)
+- PrimarySizeGB (numeric)
+- ArchiveEnabled
+- ArchiveTotalItemSize (friendly text)
+- ArchiveSizeGB (numeric)
+- ArchiveStatsError
 
-## Notes
-
-- The script uses Exchange Online PowerShell
-- Progress is displayed during execution
-- Archive mailbox properties are loaded explicitly
-- Errors are handled per mailbox without stopping the entire run
-
----
+## Safety Notes
+The script is read-only against Exchange Online and produces a report file only. Always review the output before using it for batch planning or licensing decisions. Sample data and identifiers in this repository are sanitized.
 
 ## Disclaimer
-
-This repository contains sanitized sample data only.
-
-The script is provided as a reference implementation and should be reviewed before use in any production environment.
+Provided as-is for reference and learning purposes.

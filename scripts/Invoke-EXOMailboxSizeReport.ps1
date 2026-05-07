@@ -1,19 +1,24 @@
 <#
 Invoke-EXOMailboxSizeReport.ps1
 
-Exports Exchange Online mailbox size data for a list of UPNs provided in a CSV file.
+Release Notes:
+1) CSV-driven Exchange Online mailbox size report using a UPN-only input column
+2) Produces both a friendly text size and a numeric GB column for sorting
+3) Handles archive mailboxes via an explicit ArchiveGuid check on Get-EXOMailbox
+4) Per-mailbox try/catch keeps the run going on individual failures
 
-Highlights:
-- Produces both a friendly text size (for reading) and a numeric GB column (for sorting)
-- Handles archive mailboxes by explicitly loading archive properties
-- Includes error details per mailbox for audit and troubleshooting
+Usage examples (SANITIZED):
 
-Input CSV format:
-Header: UPN
-Example:
-UPN
-alex.lee@northshore.example
-shared.finance@northshore.example
+Standard run:
+.\Invoke-EXOMailboxSizeReport.ps1 `
+  -InputCsv ".\sample-data\Mailboxes.sample.csv" `
+  -CSVPath  ".\MailboxSizeReport_YYYYMMDD_HHMMSS.csv"
+
+Quiet run (no progress bar):
+.\Invoke-EXOMailboxSizeReport.ps1 `
+  -InputCsv ".\sample-data\Mailboxes.sample.csv" `
+  -CSVPath  ".\MailboxSizeReport_YYYYMMDD_HHMMSS.csv" `
+  -NoProgress
 #>
 
 param(
@@ -28,6 +33,10 @@ param(
     [switch]$NoProgress
 )
 
+# ----------------------------
+# Helpers
+# ----------------------------
+
 function Get-BytesFromSizeString {
     param([string]$SizeString)
 
@@ -37,6 +46,10 @@ function Get-BytesFromSizeString {
 
     return 0
 }
+
+# ----------------------------
+# Connect and process mailboxes
+# ----------------------------
 
 Connect-ExchangeOnline -ShowBanner:$false | Out-Null
 
