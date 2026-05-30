@@ -76,3 +76,7 @@ The script is read-only against Exchange Online and produces a report file only.
 
 ## Disclaimer
 Provided as-is for reference and learning purposes.
+
+## Blog Post
+
+A full write-up of the script, the output format, and usage examples is at [AroraMSP: Exchange Online mailbox size reporting with PowerShell](https://aroramsp.com/blog/exo-mailbox-size-report).
